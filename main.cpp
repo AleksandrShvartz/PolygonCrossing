@@ -3,11 +3,13 @@
 #include <iostream>
 #include <fstream>
 #include <string> 
+#include <random>
+#include <complex>
 struct Line {
     int a;
     int b;
     int c;
-    Line():a(0),b(0),c(0) {
+    Line() :a(0), b(0), c(0) {
 
     }
     Line(int a, int b, int c) :a(a), b(b), c(c) {
@@ -25,13 +27,163 @@ struct Line {
         return v;
     }
 };
+// for testing
+//struct pt {
+//    pt(int x, int y) : x(x), y(y) {}
+//    int x, y;
+//};
+//
+//bool cmp(pt a, pt b) {
+//    return a.x < b.x || a.x == b.x && a.y < b.y;
+//}
+//
+//bool cw(pt a, pt b, pt c) {
+//    return a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y) < 0;
+//}
+//
+//bool ccw(pt a, pt b, pt c) {
+//    return a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y) > 0;
+//}
+//
+//void convex_hull(std::vector<pt>& a) {
+//    if (a.size() == 1)  return;
+//    sort(a.begin(), a.end(), &cmp);
+//    pt p1 = a[0], p2 = a.back();
+//    std::vector<pt> up, down;
+//    up.push_back(p1);
+//    down.push_back(p1);
+//    for (size_t i = 1; i < a.size(); ++i) {
+//        if (i == a.size() - 1 || cw(p1, a[i], p2)) {
+//            while (up.size() >= 2 && !cw(up[up.size() - 2], up[up.size() - 1], a[i]))
+//                up.pop_back();
+//            up.push_back(a[i]);
+//        }
+//        if (i == a.size() - 1 || ccw(p1, a[i], p2)) {
+//            while (down.size() >= 2 && !ccw(down[down.size() - 2], down[down.size() - 1], a[i]))
+//                down.pop_back();
+//            down.push_back(a[i]);
+//        }
+//    }
+//    a.clear();
+//    for (size_t i = 0; i < up.size(); ++i)
+//        a.push_back(up[i]);
+//    for (size_t i = down.size() - 2; i > 0; --i)
+//        a.push_back(down[i]);
+//}
+//
+//void run(Line& line, std::vector<pt> points, std::string out_name);
+//
+//bool test(int number) {
+//    int n = rand() % 100;
+//    std::vector<pt> points;
+// 
+//    std::vector<std::pair<int, int>> poly;
+//    for (int i = 0; i < n; ++i) {
+//        points.push_back(pt(rand()%1000, rand()%1000));
+//       
+//    }
+//    convex_hull(points);
+//    n = points.size();
+//    const int k = 2;     // doesnot
+//    for (int i = 0; i < n; ++i) {
+//        points[i].x *= k;
+//        points[i].y *= k;
+//        poly.push_back({ points[i].x, points[i].y });
+//    }
+//    bool res = true;
+//    // test 2 and infinity intersections 
+//    for (int i = 0; i < n; ++i)
+//    {
+//        for (int j = i + 1; j < n - 1; ++j)
+//        {
+//            int t1 = 1;
+//            int t2 = 1 ;
+//            int x1 = (points[i].x + points[i + 1].x) / k * t1;
+//            int y1 = (points[i].y + points[i + 1].y) / k * t1;
+//            int x2 = (points[j].x + points[j + 1].x) / k * t2;
+//            int y2 = (points[j].y + points[j + 1].y) / k * t2;
+//            int a = y1 - y2;
+//            int b = x2 - x1;
+//            int c = -x1*a-y1*b;
+//            Line line(a, b, c);
+//            auto name = std::string("out") + std::to_string(number)+"_line"+std::to_string(i)+std::to_string(j) + ".txt";
+//            std::ofstream inp(std::string("input") + std::to_string(number) + "_line" + std::to_string(i) + std::to_string(j)+ ".txt");
+//            if (inp.is_open()) {
+//                inp << n << '\n';
+//                for (int i = 0; i < n; ++i) {
+//                    inp << points[i].x << ' ' << points[i].y<<'\n';
+//                }
+//                inp << 1 <<'\n';
+//                inp << line.a << ' ' << line.b << ' ' << line.c<<'\n';
+//                inp.close();
+//            }
+//            run(line , points,name);
+//            std::ifstream in(name);
+//            int num = -5,x_1,x_2,y_1,y_2;
+//            try {
+//                in >> num;
+//                in >> x_1 >> y_1 >> x_2 >> y_2;
+//                res&= x_1 == x1 && y_1 == y1 && x_2 == x2 && y_2 == y2 || 
+//                    x_1 == x2 && y_1 == y2 && x_2 == x1 && y_2 == y1;
+//            }
+//            catch (std::exception& e) {
+//                return false;
+//            }
+//
+//        }
+//    }
+//    for (int i = 0; i < n; ++i)
+//    {
+//        for (int j = i + 1; j < n - 1; ++j)
+//        {
+//            int t1 = 1;
+//            int t2 = 1;
+//            int x1 = (points[i].x + points[i + 1].x) / k * t1;
+//            int y1 = (points[i].y + points[i + 1].y) / k * t1;
+//            int x2 = (points[j].x + points[j + 1].x) / k * t2;
+//            int y2 = (points[j].y + points[j + 1].y) / k * t2;
+//            int a = y1 - y2;
+//            int b = x2 - x1;
+//            int c = -x1 * a - y1 * b;
+//            Line line(a, b, c);
+//            auto name = std::string("out") + std::to_string(number) + "_line" + std::to_string(i) + std::to_string(j) + ".txt";
+//            std::ofstream inp(std::string("input") + std::to_string(number) + "_line" + std::to_string(i) + std::to_string(j) + ".txt");
+//            if (inp.is_open()) {
+//                inp << n << '\n';
+//                for (int i = 0; i < n; ++i) {
+//                    inp << points[i].x << ' ' << points[i].y << '\n';
+//                }
+//                inp << 1 << '\n';
+//                inp << line.a << ' ' << line.b << ' ' << line.c << '\n';
+//                inp.close();
+//            }
+//            run(line, points, name);
+//            std::ifstream in(name);
+//            int num = -5, x_1, x_2, y_1, y_2;
+//            try {
+//                in >> num;
+//                in >> x_1 >> y_1 >> x_2 >> y_2;
+//                res &= x_1 == x1 && y_1 == y1 && x_2 == x2 && y_2 == y2 ||
+//                    x_1 == x2 && y_1 == y2 && x_2 == x1 && y_2 == y1;
+//            }
+//            catch (std::exception& e) {
+//                return false;
+//            }
+//
+//        }
+//    }
+//
+//    return res;
+//}
+
+
 struct Edge {
     Edge(){}
     Edge(std::pair<int, int> a, std::pair<int, int> b):a(a),b(b){}
     std::pair<int, int> a;
     std::pair<int, int> b;
 
-    std::pair<int,int> findIntersection(Line& l, std::vector<int>& answer) {
+    std::pair<int,int> findIntersection(Line& l, std::vector<std::pair<int, int>>& answer) {
         long long A = (long long)b.second - a.second; // A = y2 - y1.
         long long B = (long long)a.first - b.first;  // B = x1 - x2.
           // C = y1 * (x2 - x1) - (y2 - y1) * x1
@@ -49,12 +201,9 @@ struct Edge {
         if (det == 0L) {
             // check if lines matches     
             if (det_x == 0L && det_y == 0L) {
-               answer.push_back(a.first);
-               answer.push_back(a.second);
-               answer.push_back(b.first);
-               answer.push_back(b.second);
-               answer.push_back(b.first);
-               answer.push_back(b.second);
+               answer.push_back(a);
+               answer.push_back(b);
+               answer.push_back(std::make_pair(INT_MAX, INT_MAX));   // trash
                return a;
             }
            
@@ -65,8 +214,7 @@ struct Edge {
         int x = - det_x / det;
         int y = - det_y / det;
 
-        answer.push_back(x);
-        answer.push_back(y);
+        answer.push_back({ x,y });
         return {x,y};
     }
 };
@@ -77,7 +225,7 @@ struct ShiftedArr {
     ShiftedArr(std::vector<std::pair<int, int>>& a, int sh) :arr(a), shift(sh) {}
     // return shifted element.
     std::pair<int, int>& operator[](int i) {
-        return arr[((long long)i + shift) % arr.size()];
+        return arr[((long long)i + arr.size() + shift) % arr.size()];
     }
     int ternaryMinSearch(int l, int r, Line& line, int sign) {
         int l1, l2, sign_l1,sign_l2;
@@ -101,7 +249,7 @@ struct ShiftedArr {
         
         return l;
     }
-    std::pair<int, int> binSearch(int l, int r, Line& line) {
+    int binSearch(int l, int r, Line& line) {
         int mid = (l + r) / 2;
         while (l < r - 1) {
             mid = (l + r) / 2;
@@ -110,7 +258,7 @@ struct ShiftedArr {
             else
                 l = mid;
         }
-        return { l,r };
+        return l;
     }
 
 };
@@ -118,70 +266,80 @@ struct ShiftedArr {
 *  Return vector of all intersection points,
 *   if line consists with edge return vector with size > 4 
 */
-std::vector<int> solve(
+std::vector<std::pair<int, int>> solve(
     std::vector<std::pair<int, int>>& verts, 
     Line line,
-    std::pair<int,int>& min,
-    std::pair<int, int>& max
+    int min,
+    int max
     ) {
 
-    ShiftedArr poly(verts, min.first);
-    std::vector<int> answer;
-    std::vector<std::pair<int, std::pair<int,int>>> answer_edges;
+    ShiftedArr poly(verts, min);
+    std::vector<std::pair<int,int>> answer;
+    std::vector<int> answer_edges;
     // check if line || Ox
-    if (line.a == 0) {
-       //todo
-    }
-    //check if line || Oy
-    if (line.b == 0) {
-        //todo 
-    }
 
     int l = 0;
     int r = poly.arr.size();
     bool is_top = false;
-    std::cout << "Init Left point: " << poly[l].first << " " << poly[l].second <<"index: "<<l<< "\n";
-    std::cout << "Init Right point: " << poly[r].first << " " << poly[r].second << "index: " << r << "\n";
-        //deside which part of polygon we should choose 
-        long long value_l = -(line.a * (long long) poly[min.first].first + line.c); // -(a*x_0+c)
-        long long value_r =   line.b * (long long) poly[min.first].second; //   y*b
+   // std::cout << "Init Left point: " << poly[l].first << " " << poly[l].second <<"index: "<<l<< "\n";
+    //std::cout << "Init Right point: " << poly[r].first << " " << poly[r].second << "index: " << r << "\n";
+        //deside which part of polygon we should choose
+        long long value_l = -(line.a * (long long) poly[min].first + line.c); // -(a*x_0+c)
+        long long value_r =   line.b * (long long) poly[min].second; //   y*b
         if (((value_l < value_r) && line.b > 0) || ((value_l > value_r) && line.b < 0)) { // bottom part
-            l = max.first;
+            l = max;
            // std::cout << poly[1].second << "\n";
-            std::cout <<"Bottom" << "\n";
+          //  std::cout <<"Bottom" << "\n";
         }
         else {  // top part
-            r = max.first;
+            r = max;
             if (r == 0)
                 r = poly.arr.size();
             is_top = true;
-            std::cout << "Top" << "\n";
+            //std::cout << "Top" << "\n";
         }
+
+        //  if intersection point exists
+        auto find_answer = [&](int left, int right) {
+            if (line.sign(poly[left]) * line.sign(poly[right]) == 1) {
+
+                return;
+            }
+            int v = poly.binSearch(left, right, line);
+            Edge edge(poly[v], poly[v + 1]);
+            auto point = edge.findIntersection(line, answer);
+            //check if point is vertex
+            if (point == poly[v]) {
+                answer_edges.push_back(v);
+            }
+
+        };
+
+
         //ternary search to find middle point (which devide to parts with one answer maximum) 
         // it is a minimum by siged distance where sign is "+" if point on the [l] and [r] side and "-" if opposite 
-        auto v = poly.ternaryMinSearch(l, r, line, line.sign(poly[l]));
-        std::cout << "First point: " << poly[0].first << " " << poly[0].second << "\n";
-        std::cout << "Ternary point: " <<poly[v].first<<" "<<poly[v].second << "index: " << v << "\n";
-        std::cout << " Left point: " << poly[l].first << " " << poly[l].second << "index: " << l << "\n";
-        std::cout << " Right point: " << poly[r].first << " " << poly[r].second << "index: " << r << "\n";
+        if (line.sign(poly[l]) == 0) {
+            find_answer(l, l);
+             //  if (line.sign(poly[left]) * line.sign(poly[right]) == 1)
+            find_answer(l + 1, l - 1 + poly.arr.size());
+            return answer;
+        }
+        int minimum_of_the_fun = poly.ternaryMinSearch(l, r, line, line.sign(poly[l]));
+        //std::cout << "First point: " << poly[0].first << " " << poly[0].second << "\n";
+       // std::cout << "Ternary point: " <<poly[].first<<" "<<poly[v].second << "index: " << v << "\n";
+        //std::cout << " Left point: " << poly[l].first << " " << poly[l].second << "index: " << l << "\n";
+        //std::cout << " Right point: " << poly[r].first << " " << poly[r].second << "index: " << r << "\n";
         //two or one binary searches to find answer
         int sign_l = line.sign(poly[l]);
         int sign_r = line.sign(poly[r]);
-        int mid  = v; // todo check if l==r in search
+        int mid  = minimum_of_the_fun;
         int sign_mid = line.sign(poly[mid]);
-        //  if intersection point exists
-        auto find_answer = [&](int left, int right) {
-            auto edge = poly.binSearch(left, right, line);
-            Edge segment(poly[edge.first], poly[edge.second]);
-            int size = answer.size();
-            auto point = segment.findIntersection(line, answer);
-            if (point == poly[edge.first]) {
-                answer_edges.push_back(std::make_pair(edge.first, point));
-            }
-            if (point == poly[edge.second]) {
-                answer_edges.push_back(std::make_pair(edge.second, point));
-            }
-        };
+      
+        if (sign_mid == 0) {
+            find_answer(mid, mid);
+           // if(line.sign(poly[mid-1])* line.sign(poly[mid + 1]) != 1)
+                find_answer(mid+1, mid-1+poly.arr.size());
+        }
         if (sign_l * sign_mid != 1) {
             find_answer(l, mid);
         }
@@ -189,22 +347,63 @@ std::vector<int> solve(
             find_answer(mid, r);
         }
       
-        if (answer.size() == 2 && sign_l *sign_r != 1) { // can be another point
+        if (answer.size() == 1 && sign_l *sign_r != 1) { // can be another point
             if (is_top) {
                //check bottom 
-                find_answer(max.first, poly.arr.size() - 1);         
+                find_answer(max, poly.arr.size() - 1);         
             }
             else {
-                find_answer(0, max.first);             
+                find_answer(0, max);             
             }
         }
-        //check parallel
-        if (answer_edges.size() == 2 && abs(answer_edges[0].first - answer_edges[1].first) == 1) {
-            answer.push_back(answer_edges[0].second.first);
-            answer.push_back(answer_edges[0].second.second);
+        //check parallel   
+        if (answer_edges.size() == 2 && abs(answer_edges[0] - answer_edges[1]) == 1) {
+            answer.push_back(poly[answer_edges[0]]);
+            answer.push_back(poly[answer_edges[1]]);
+            answer.push_back(std::make_pair(INT_MAX, INT_MAX));
         }
     return answer;
 }
+//for testing
+//void run(Line& line, std::vector<pt> points, std::string out_name) {
+//    std::ofstream out(out_name);
+//    std::pair<std::pair<int, int>, int> min_x;
+//    std::pair<std::pair<int, int>, int> max_x;
+//    std::vector<std::pair<int, int>> poly;
+//    for (int i = 0; i != points.size(); ++i) {
+//        int x=points[i].x, y=points[i].y;
+//        poly.push_back({ x,y });
+//        if (i) {
+//            min_x = min(min_x, { {x,y},i });
+//            max_x = max(max_x, { {x,y},i });
+//        }
+//        else {
+//            min_x = { {x,y},i };
+//            max_x = { {x,y},i };
+//        }
+//    }
+//    std::vector<std::pair<int, int>> res = solve(poly, line, min_x.second, max_x.second);             // this is answer
+//    res.erase(std::unique(res.begin(), res.end()), res.end());
+//    if (res.size() > 2) {
+//        // Infinity
+//        out << -1 << "\n";
+//        out << res[0].first << ' ' << res[0].second << ' ';
+//        out << res[1].first << ' ' << res[1].second;
+//
+//        out << '\n';
+//    }
+//    else {
+//        out << res.size() << '\n';
+//        for (auto coord : res) {
+//            out << coord.first << ' ' << coord.second << ' ';
+//        }
+//        out << '\n';
+//    }
+//    out.close();
+//}
+//void main() {
+//    std::cout<<test(239);
+//}
 int main() {
     std::string line;  
     std::ifstream in("input.txt"); 
@@ -213,8 +412,8 @@ int main() {
     {
         int n = -1;
         in >> n;
-        std::pair<int, int> min_x;
-        std::pair<int, int> max_x;
+        std::pair<std::pair<int,int>, int> min_x;
+        std::pair<std::pair<int, int>, int> max_x;
         std::vector<std::pair<int, int>> verts;
         verts.reserve(n);
         for (int i = 0; i != n; ++i) {
@@ -222,12 +421,12 @@ int main() {
             in >> x >> y;
             verts.emplace_back(std::make_pair(x, y));
             if (i) {
-                max_x = max_x.second >= x ? max_x : std::make_pair(i, x);
-                min_x = min_x.second <= x ? min_x : std::make_pair(i, x);
+                min_x = min(min_x, { {x,y},i });
+                max_x = max(max_x, { {x,y},i });
             }
             else {
-                max_x = std::make_pair(0, x);
-                min_x = std::make_pair(0, x);
+                min_x =  { {x,y},i };
+                max_x = { {x,y},i };
             }
         }
 
@@ -243,28 +442,20 @@ int main() {
         }
         if (out.is_open()) {
             for (auto line : lines) {
-                auto res = solve(verts, line, min_x, max_x);
-
-                if (res.size() > 4) {
+                std::vector<std::pair<int,int>> res = solve(verts, line, min_x.second, max_x.second);             // this is answer
+                res.erase(std::unique(res.begin(), res.end()), res.end());
+                if (res.size() > 2) {
+                    // Infinity
                     out << -1 << "\n";
-                    out << res[0] << ' ' << res[1] << ' ';
-                    for (int i = 2; i < res.size(); i+=2) {
-                        if (res[0] != res[i] || res[1] != res[i + 1]) {
-                            out << res[i] << ' ' << res[i+1] << ' ';
-                            break;
-                        }
-                    }
+                    out << res[0].first << ' ' << res[0].second << ' ';
+                    out << res[1].first << ' ' << res[1].second;
+
                     out << '\n';
                 }
                 else {
-                       if (res.size() == 4 && res[0] == res[2] && res[1] == res[3]) {
-                            out << 1 << '\n';
-                            out << res[0] << ' ' << res[1] << '\n';
-                            continue;
-                        }
-                    out << res.size() / 2 << '\n';
+                    out << res.size() << '\n';
                     for (auto coord : res) {
-                        out << coord << ' ';
+                        out << coord.first << ' ' << coord.second << ' ';
                     }
                     out << '\n';
                 }
