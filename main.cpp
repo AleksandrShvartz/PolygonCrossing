@@ -312,6 +312,9 @@ std::vector<std::pair<int, int>> solve(
             if (point == poly[v]) {
                 answer_edges.push_back(v);
             }
+            if (point == poly[v+1]) {
+                answer_edges.push_back(v+1);
+            }
 
         };
 
@@ -322,42 +325,45 @@ std::vector<std::pair<int, int>> solve(
             find_answer(l, l);
              //  if (line.sign(poly[left]) * line.sign(poly[right]) == 1)
             find_answer(l + 1, l - 1 + poly.arr.size());
-            return answer;
+            
         }
-        int minimum_of_the_fun = poly.ternaryMinSearch(l, r, line, line.sign(poly[l]));
-        //std::cout << "First point: " << poly[0].first << " " << poly[0].second << "\n";
-       // std::cout << "Ternary point: " <<poly[].first<<" "<<poly[v].second << "index: " << v << "\n";
-        //std::cout << " Left point: " << poly[l].first << " " << poly[l].second << "index: " << l << "\n";
-        //std::cout << " Right point: " << poly[r].first << " " << poly[r].second << "index: " << r << "\n";
-        //two or one binary searches to find answer
-        int sign_l = line.sign(poly[l]);
-        int sign_r = line.sign(poly[r]);
-        int mid  = minimum_of_the_fun;
-        int sign_mid = line.sign(poly[mid]);
-      
-        if (sign_mid == 0) {
-            find_answer(mid, mid);
-           // if(line.sign(poly[mid-1])* line.sign(poly[mid + 1]) != 1)
-                find_answer(mid+1, mid-1+poly.arr.size());
-        }
-        if (sign_l * sign_mid != 1) {
-            find_answer(l, mid);
-        }
-        if (sign_r * sign_mid != 1) {
-            find_answer(mid, r);
-        }
-      
-        if (answer.size() == 1 && sign_l *sign_r != 1) { // can be another point
-            if (is_top) {
-               //check bottom 
-                find_answer(max, poly.arr.size() - 1);         
+        else {
+            int minimum_of_the_fun = poly.ternaryMinSearch(l, r, line, line.sign(poly[l]));
+            //std::cout << "First point: " << poly[0].first << " " << poly[0].second << "\n";
+           // std::cout << "Ternary point: " <<poly[].first<<" "<<poly[v].second << "index: " << v << "\n";
+            //std::cout << " Left point: " << poly[l].first << " " << poly[l].second << "index: " << l << "\n";
+            //std::cout << " Right point: " << poly[r].first << " " << poly[r].second << "index: " << r << "\n";
+            //two or one binary searches to find answer
+            int sign_l = line.sign(poly[l]);
+            int sign_r = line.sign(poly[r]);
+            int mid = minimum_of_the_fun;
+            int sign_mid = line.sign(poly[mid]);
+
+            if (sign_mid == 0) {
+                find_answer(mid, mid);
+                // if(line.sign(poly[mid-1])* line.sign(poly[mid + 1]) != 1)
+                find_answer(mid + 1, mid - 1 + poly.arr.size());
             }
-            else {
-                find_answer(0, max);             
+            if (sign_l * sign_mid != 1) {
+                find_answer(l, mid);
+            }
+            if (sign_r * sign_mid != 1) {
+                find_answer(mid, r);
+            }
+
+            if (answer.size() == 1 && sign_l * sign_r != 1) { // can be another point
+                if (is_top) {
+                    //check bottom 
+                    find_answer(max, poly.arr.size() - 1);
+                }
+                else {
+                    find_answer(0, max);
+                }
             }
         }
         //check parallel   
-        if (answer_edges.size() == 2 && abs(answer_edges[0] - answer_edges[1]) == 1) {
+        if (answer_edges.size() == 2 && (abs((answer_edges[0] - answer_edges[1])) == 1 ||
+            abs((answer_edges[0] - answer_edges[1])) == poly.arr.size()-1)) {
             answer.push_back(poly[answer_edges[0]]);
             answer.push_back(poly[answer_edges[1]]);
             answer.push_back(std::make_pair(INT_MAX, INT_MAX));
