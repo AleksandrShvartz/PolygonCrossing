@@ -183,7 +183,7 @@ struct Edge {
     std::pair<int, int> a;
     std::pair<int, int> b;
 
-    std::pair<int,int> findIntersection(Line& l, std::vector<std::pair<int, int>>& answer) {
+    std::pair<double,double> findIntersection(Line& l, std::vector<std::pair<double, double>>& answer) {
         long long A = (long long)b.second - a.second; // A = y2 - y1.
         long long B = (long long)a.first - b.first;  // B = x1 - x2.
           // C = y1 * (x2 - x1) - (y2 - y1) * x1
@@ -211,8 +211,8 @@ struct Edge {
                 throw "Error: there should be an intersection point";
             }
         }
-        int x = - det_x / det;
-        int y = - det_y / det;
+        double x = - (double)det_x / det;
+        double y = - (double)det_y / det;
 
         answer.push_back({ x,y });
         return {x,y};
@@ -266,7 +266,7 @@ struct ShiftedArr {
 *  Return vector of all intersection points,
 *   if line consists with edge return vector with size > 4 
 */
-std::vector<std::pair<int, int>> solve(
+std::vector<std::pair<double, double>> solve(
     std::vector<std::pair<int, int>>& verts, 
     Line line,
     int min,
@@ -274,7 +274,7 @@ std::vector<std::pair<int, int>> solve(
     ) {
 
     ShiftedArr poly(verts, min);
-    std::vector<std::pair<int,int>> answer;
+    std::vector<std::pair<double,double>> answer;
     std::vector<int> answer_edges;
     // check if line || Ox
 
@@ -309,10 +309,12 @@ std::vector<std::pair<int, int>> solve(
             Edge edge(poly[v], poly[v + 1]);
             auto point = edge.findIntersection(line, answer);
             //check if point is vertex
-            if (point == poly[v]) {
+            std::pair<int, int> int_point = std::make_pair(point.first + 0.5 - (point.first < 0),
+                point.second + 0.5 - (point.second < 0));
+            if (int_point == poly[v]) {
                 answer_edges.push_back(v);
             }
-            if (point == poly[v+1]) {
+            if (int_point == poly[v+1]) {
                 answer_edges.push_back(v+1);
             }
 
@@ -448,7 +450,7 @@ int main() {
         }
         if (out.is_open()) {
             for (auto line : lines) {
-                std::vector<std::pair<int,int>> res = solve(verts, line, min_x.second, max_x.second);             // this is answer
+                std::vector<std::pair<double,double>> res = solve(verts, line, min_x.second, max_x.second);             // this is answer
                 res.erase(std::unique(res.begin(), res.end()), res.end());
                 if (res.size() > 2) {
                     // Infinity
