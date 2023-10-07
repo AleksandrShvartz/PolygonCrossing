@@ -270,35 +270,53 @@ std::vector<std::pair<double, double>> solve(
     std::vector<std::pair<int, int>>& verts, 
     Line line,
     int min,
-    int max
+    int max,
+    int min_y_ind,
+    int max_y_ind
     ) {
 
-    ShiftedArr poly(verts, min);
+    ShiftedArr poly(verts, line.b == 0 ? max_y_ind : min);
     std::vector<std::pair<double,double>> answer;
     std::vector<int> answer_edges;
-    // check if line || Ox
-
+   
     int l = 0;
     int r = poly.arr.size();
-    bool is_top = false;
-   // std::cout << "Init Left point: " << poly[l].first << " " << poly[l].second <<"index: "<<l<< "\n";
-    //std::cout << "Init Right point: " << poly[r].first << " " << poly[r].second << "index: " << r << "\n";
-        //deside which part of polygon we should choose
-        long long value_l = -(line.a * (long long) poly[min].first + line.c); // -(a*x_0+c)
-        long long value_r =   line.b * (long long) poly[min].second; //   y*b
-        if (((value_l < value_r) && line.b > 0) || ((value_l > value_r) && line.b < 0)) { // bottom part
-            l = max;
-           // std::cout << poly[1].second << "\n";
-          //  std::cout <<"Bottom" << "\n";
-        }
-        else {  // top part
-            r = max;
-            if (r == 0)
-                r = poly.arr.size();
-            is_top = true;
-            //std::cout << "Top" << "\n";
-        }
+    bool is_first_half = false;
+    // check if line || Ox
+       if (line.b == 0) {          
+           long long value = (line.a * (long long)poly[l].first + line.c); // (a*x_1+c)
+           auto sign = [](long long x) {return x > 0 ? 1 : x < 0 ? -1 : 0; };
+           if (sign(value) * sign(line.a) != 1) {             // right part
+               r = min_y_ind;
+               if (r == 0)
+                   r = poly.arr.size();
+               is_first_half = true;
+           }
+           else {//left part
+               l = min_y_ind;
+           }
+       }
+       else {
+           // std::cout << "Init Left point: " << poly[l].first << " " << poly[l].second <<"index: "<<l<< "\n";
+            //std::cout << "Init Right point: " << poly[r].first << " " << poly[r].second << "index: " << r << "\n";
+                //deside which part of polygon we should choose
 
+           long long value_l = -(line.a * (long long)poly[min].first + line.c); // -(a*x_0+c)
+           long long value_r = line.b * (long long)poly[min].second; //   y*b
+
+           if (((value_l < value_r) && line.b > 0) || ((value_l > value_r) && line.b < 0)) { // bottom part
+               l = max;
+               // std::cout << poly[1].second << "\n";
+              //  std::cout <<"Bottom" << "\n";
+           }
+           else {  // top part
+               r = max;
+               if (r == 0)
+                   r = poly.arr.size();
+               is_first_half = true;
+               //std::cout << "Top" << "\n";
+           }
+       }
         //  if intersection point exists
         auto find_answer = [&](int left, int right) {
             if (line.sign(poly[left]) * line.sign(poly[right]) == 1) {
@@ -354,12 +372,13 @@ std::vector<std::pair<double, double>> solve(
             }
 
             if (answer.size() == 1 && sign_l * sign_r != 1) { // can be another point
-                if (is_top) {
+                int ind = (line.b == 0 ? min_y_ind : max);
+                if (is_first_half) {
                     //check bottom 
-                    find_answer(max, poly.arr.size() - 1);
+                    find_answer(ind, poly.arr.size() - 1);
                 }
                 else {
-                    find_answer(0, max);
+                    find_answer(0, ind);
                 }
             }
         }
@@ -422,6 +441,8 @@ int main() {
         in >> n;
         std::pair<std::pair<int,int>, int> min_x;
         std::pair<std::pair<int, int>, int> max_x;
+        std::pair<std::pair<int, int>, int> min_y;
+        std::pair<std::pair<int, int>, int> max_y;
         std::vector<std::pair<int, int>> verts;
         verts.reserve(n);
         for (int i = 0; i != n; ++i) {
@@ -431,10 +452,14 @@ int main() {
             if (i) {
                 min_x = min(min_x, { {x,y},i });
                 max_x = max(max_x, { {x,y},i });
+                min_y = min(min_y, { {x,y},i });
+                max_y = max(max_y, { {x,y},i });
             }
             else {
                 min_x =  { {x,y},i };
                 max_x = { {x,y},i };
+                min_y = { {x,y},i };
+                max_y = { {x,y},i };
             }
         }
 
@@ -450,7 +475,7 @@ int main() {
         }
         if (out.is_open()) {
             for (auto line : lines) {
-                std::vector<std::pair<double,double>> res = solve(verts, line, min_x.second, max_x.second);             // this is answer
+                auto res= solve(verts, line, min_x.second, max_x.second, min_y.second, max_y.second);             // this is answer
                 res.erase(std::unique(res.begin(), res.end()), res.end());
                 if (res.size() > 2) {
                     // Infinity
