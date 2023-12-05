@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include <string> 
+#include <string>
 
 struct Line {
     int a;
@@ -14,10 +14,8 @@ struct Line {
     Line(int a, int b, int c) :a(a), b(b), c(c) {
     }
     int sign(std::pair<int, int> p) {
-        long long lx = p.first;
-        long long ly = p.second;
-        long long v = a * lx + b * ly + c;
-        return  v > 0L ? 1 : v < 0L ? -1 : 0;
+        auto value = dist(p);
+        return  (value > 0L) ? 1 : ((value < 0L) ? -1 : 0);
     }
     long long dist(std::pair<int, int> p) {
         long long lx = p.first;
@@ -27,16 +25,17 @@ struct Line {
     }
 };
 
+
 struct Edge {
-    Edge(){}
-    Edge(std::pair<int, int> a, std::pair<int, int> b):a(a),b(b){}
+    Edge() {}
+    Edge(std::pair<int, int> a, std::pair<int, int> b) :a(a), b(b) {}
     std::pair<int, int> a;
     std::pair<int, int> b;
 
-    std::pair<double,double> findIntersection(Line& l, std::vector<std::pair<double, double>>& answer) {
+    std::pair<double, double> findIntersection(Line& l, std::vector<std::pair<double, double>>& answer) {
         long long A = (long long)b.second - a.second; // A = y2 - y1.
         long long B = (long long)a.first - b.first;  // B = x1 - x2.
-          // C = y1 * (x2 - x1) - (y2 - y1) * x1
+        // C = y1 * (x2 - x1) - (y2 - y1) * x1
         long long C = a.second * ((long long)b.first - a.first) - ((long long)b.second - a.second) * a.first;
         // |A1 B1|
         // |A2 B2|
@@ -51,21 +50,21 @@ struct Edge {
         if (det == 0L) {
             // check if lines matches     
             if (det_x == 0L && det_y == 0L) {
-               answer.push_back(a);
-               answer.push_back(b);
-               answer.push_back(std::make_pair(INT_MAX, INT_MAX));   // trash
-               return a;
+                answer.push_back(a);
+                answer.push_back(b);
+                answer.push_back(std::make_pair(INT_MAX, INT_MAX));   // trash
+                return a;
             }
-           
+
             else {
                 throw "Error: there should be an intersection point";
             }
         }
-        double x = - (double)det_x / det;
-        double y = - (double)det_y / det;
+        double x = -(double)det_x / det;
+        double y = -(double)det_y / det;
 
         answer.push_back({ x,y });
-        return {x,y};
+        return { x,y };
     }
 };
 
@@ -75,20 +74,35 @@ struct ShiftedArr {
     ShiftedArr(std::vector<std::pair<int, int>>& a, int sh) :arr(a), shift(sh) {}
     // return shifted element.
     std::pair<int, int>& operator[](int i) {
-        return arr[((long long)i + arr.size() + shift) % arr.size()];
+        return arr[(i + arr.size() + shift) % arr.size()];
     }
-    int ternaryMinSearch(int l, int r, Line& line, int sign) {
-        int l1, l2, sign_l1,sign_l2;
+    int ternaryMinSearch(int l, int r, Line& line) {
+        // near needed point function value is negative
+        int sign = line.sign((*this)[l]);
+        int l1, l2, sign_l1, sign_l2;
         while (l < r) {
             l1 = l + (r - l) / 3;
             l2 = r - (r - l) / 3;
             sign_l1 = line.sign((*this)[l1]) == sign ? 1 : -1;
             sign_l2 = line.sign((*this)[l2]) == sign ? 1 : -1;
-            if ((abs(line.dist((*this)[l1])) * sign_l1) == (abs(line.dist((*this)[l2])) * sign_l2)) {
+            if (abs(line.dist((*this)[l1])) * sign_l1 == abs(line.dist((*this)[l2])) * sign_l2) {
                 l1++;
                 sign_l1 = line.sign((*this)[l1]) == sign ? 1 : -1;
             }
-                
+            if (l1 == l2) {
+                // if points are neigbhours and with same distance
+                int min_ind = l;
+                int sign_l = line.sign((*this)[l]) == sign ? 1 : -1;
+                auto min = abs(line.dist((*this)[l])) * sign_l;
+                for (int i = l; i <= r; ++i) {
+                    int sign_i = line.sign((*this)[i]) == sign ? 1 : -1;
+                    if ((abs(line.dist((*this)[i])) * sign_i) < min) {
+                        min = (abs(line.dist((*this)[i])) * sign_i);
+                        min_ind = i;
+                    }
+                }
+                return min_ind;
+            }
             if ((abs(line.dist((*this)[l1])) * sign_l1) > (abs(line.dist((*this)[l2])) * sign_l2)) {
                 l = l1 + 1;
             }
@@ -96,7 +110,7 @@ struct ShiftedArr {
                 r = l2 - 1;
             }
         }
-        
+
         return l;
     }
     int binSearch(int l, int r, Line& line) {
@@ -114,142 +128,143 @@ struct ShiftedArr {
 };
 /*
 *  Return vector of all intersection points,
-*   if line consists with edge return vector with size > 4 
+*   if line consists with edge return vector with size > 4
 */
 std::vector<std::pair<double, double>> solve(
-    std::vector<std::pair<int, int>>& verts, 
+    std::vector<std::pair<int, int>>& verts,
     Line line,
     int min,
     int max,
     int min_y_ind,
     int max_y_ind
-    ) {
-
-    ShiftedArr poly(verts, line.b == 0 ? max_y_ind : min);
-    std::vector<std::pair<double,double>> answer;
+) {
+    int shift = line.b == 0 ? max_y_ind : min;
+    ShiftedArr poly(verts, shift);
+    std::vector<std::pair<double, double>> answer;
     std::vector<int> answer_edges;
-   
+
     int l = 0;
     int r = poly.arr.size();
     bool is_first_half = false;
     // check if line || Oy
-       if (line.b == 0) {          
-           long long value = (line.a * (long long)poly[0].first + line.c); // (a*x_1+c)
-           auto sign = [](long long x) {return x > 0 ? 1 : x < 0 ? -1 : 0; };
-           if (sign(value) * sign(line.a) != 1) {             // right part
-               r = min_y_ind;
-               if (r == 0)
-                   r = poly.arr.size();
-               is_first_half = true;
-           }
-           else {//left part
-               l = min_y_ind;
-           }
-       }
-       else {
-           // std::cout << "Init Left point: " << poly[l].first << " " << poly[l].second <<"index: "<<l<< "\n";
-            //std::cout << "Init Right point: " << poly[r].first << " " << poly[r].second << "index: " << r << "\n";
-                //deside which part of polygon we should choose
-
-           long long value_l = -(line.a * (long long)poly[0].first + line.c); // -(a*x_0+c)
-           long long value_r = line.b * (long long)poly[0].second; //   y*b
-
-           if (((value_l < value_r) && line.b > 0) || ((value_l > value_r) && line.b < 0)) { // bottom part
-               l = max;
-               // std::cout << poly[1].second << "\n";
-              //  std::cout <<"Bottom" << "\n";
-           }
-           else {  // top part
-               r = max;
-               if (r == 0)
-                   r = poly.arr.size();
-               is_first_half = true;
-               //std::cout << "Top" << "\n";
-           }
-       }
-        //  if intersection point exists
-        auto find_answer = [&](int left, int right) {
-            if (line.sign(poly[left]) * line.sign(poly[right]) == 1) {
-
-                return;
-            }
-            int v = poly.binSearch(left, right, line);
-            Edge edge(poly[v], poly[v + 1]);
-            auto point = edge.findIntersection(line, answer);
-            //check if point is vertex
-            std::pair<int, int> int_point = std::make_pair(point.first + 0.5 - (point.first < 0),
-                point.second + 0.5 - (point.second < 0));
-            if (int_point == poly[v]) {
-                answer_edges.push_back(v);
-            }
-            if (int_point == poly[v+1]) {
-                answer_edges.push_back(v+1);
-            }
-
-        };
-
-
-        //ternary search to find middle point (which devide to parts with one answer maximum) 
-        // it is a minimum by siged distance where sign is "+" if point on the [l] and [r] side and "-" if opposite 
-        if (line.sign(poly[l]) == 0) {
-            find_answer(l, l);
-             //  if (line.sign(poly[left]) * line.sign(poly[right]) == 1)
-            find_answer(l + 1, l - 1 + poly.arr.size());
-            
+    if (line.b == 0) {
+        long long value = (line.a * (long long)poly[0].first + line.c); // (a*x_1+c)
+        auto sign = [](long long x) {return x > 0 ? 1 : x < 0 ? -1 : 0; };
+        if (sign(value) * sign(line.a) != 1) {             // right part
+            r = min_y_ind;
+            if (r <= 0)
+                r = poly.arr.size();
+            is_first_half = true;
         }
-        else {
-            int minimum_of_the_fun = poly.ternaryMinSearch(l, r, line, line.sign(poly[l]));
-            //std::cout << "First point: " << poly[0].first << " " << poly[0].second << "\n";
-           // std::cout << "Ternary point: " <<poly[].first<<" "<<poly[v].second << "index: " << v << "\n";
-            //std::cout << " Left point: " << poly[l].first << " " << poly[l].second << "index: " << l << "\n";
-            //std::cout << " Right point: " << poly[r].first << " " << poly[r].second << "index: " << r << "\n";
-            //two or one binary searches to find answer
-            int sign_l = line.sign(poly[l]);
-            int sign_r = line.sign(poly[r]);
-            int mid = minimum_of_the_fun;
-            int sign_mid = line.sign(poly[mid]);
+        else {//left part
+            l = min_y_ind;
+        }
+    }
+    else {
+        // std::cout << "Init Left point: " << poly[l].first << " " << poly[l].second <<"index: "<<l<< "\n";
+        //std::cout << "Init Right point: " << poly[r].first << " " << poly[r].second << "index: " << r << "\n";
+        //deside which part of polygon we should choose
 
-            if (sign_mid == 0) {
-                find_answer(mid, mid);
-                // if(line.sign(poly[mid-1])* line.sign(poly[mid + 1]) != 1)
-                find_answer(mid + 1, mid - 1 + poly.arr.size());
-            }
-            if (sign_l * sign_mid != 1) {
-                find_answer(l, mid);
-            }
-            if (sign_r * sign_mid != 1) {
-                find_answer(mid, r);
-            }
+        long long value_l = -(line.a * (long long)poly[0].first + line.c); // -(a*x_0+c)
+        long long value_r = line.b * (long long)poly[0].second; //   y*b
 
-            if (answer.size() == 1 && sign_l * sign_r != 1) { // can be another point
-                int ind = (line.b == 0 ? min_y_ind : max);
-                if (is_first_half) {
-                    //check bottom 
-                    find_answer(ind, poly.arr.size() - 1);
-                }
-                else {
-                    find_answer(0, ind);
-                }
+        if (((value_l < value_r) && line.b > 0) || ((value_l > value_r) && line.b < 0)) { // bottom part
+            l = max - min;
+            // std::cout << poly[1].second << "\n";
+            //  std::cout <<"Bottom" << "\n";
+        }
+        else {  // top part
+            r = max - min;
+            if (r <= 0)
+                r = poly.arr.size();
+            is_first_half = true;
+            //std::cout << "Top" << "\n";
+        }
+    }
+    //  if intersection point exists
+    auto find_answer = [&](int left, int right) {
+        if (line.sign(poly[left]) * line.sign(poly[right]) == 1) {
+
+            return;
+        }
+        int v = poly.binSearch(left, right, line);
+        Edge edge(poly[v], poly[v + 1]);
+        auto point = edge.findIntersection(line, answer);
+        //check if point is vertex
+        std::pair<int, int> int_point = std::make_pair(point.first + 0.5 - (point.first < 0),
+            point.second + 0.5 - (point.second < 0));
+        if (int_point == poly[v]) {
+            answer_edges.push_back(v);
+        }
+        if (int_point == poly[v + 1]) {
+            answer_edges.push_back(v + 1);
+        }
+
+    };
+
+
+    //ternary search to find middle point (which devide to parts with one answer maximum) 
+    // it is a minimum by siged distance where sign is "+" if point on the [l] and [r] side and "-" if opposite 
+    if (line.sign(poly[l]) == 0) {
+        find_answer(l, l);
+        //  if (line.sign(poly[left]) * line.sign(poly[right]) == 1)
+        find_answer(l + 1, l - 1 + poly.arr.size());
+
+    }
+    else {
+        int minimum_of_the_fun = poly.ternaryMinSearch(l, r, line);
+        //std::cout << "First point: " << poly[0].first << " " << poly[0].second << "\n";
+        // std::cout << "Ternary point: " <<poly[].first<<" "<<poly[v].second << "index: " << v << "\n";
+        //std::cout << " Left point: " << poly[l].first << " " << poly[l].second << "index: " << l << "\n";
+        //std::cout << " Right point: " << poly[r].first << " " << poly[r].second << "index: " << r << "\n";
+        //two or one binary searches to find answer
+        int sign_l = line.sign(poly[l]);
+        int sign_r = line.sign(poly[r]);
+        int mid = minimum_of_the_fun;
+        int sign_mid = line.sign(poly[mid]);
+
+        if (sign_mid == 0) {
+            find_answer(mid, mid);
+            // if(line.sign(poly[mid-1])* line.sign(poly[mid + 1]) != 1)
+            find_answer(mid + 1, mid - 1 + poly.arr.size());
+        }
+        if (sign_l * sign_mid != 1) {
+            find_answer(l, mid);
+        }
+        if (sign_r * sign_mid != 1) {
+            find_answer(mid, r);
+        }
+
+        if (answer.size() == 1 && sign_l * sign_r != 1) { // can be another point
+            int ind = (line.b == 0 ? min_y_ind : max - min);
+            if (is_first_half) {
+                //check bottom 
+                find_answer(ind, poly.arr.size() - 1);
+            }
+            else {
+                find_answer(0, ind);
             }
         }
-        //check parallel   
-        if (answer_edges.size() == 2 && (abs((answer_edges[0] - answer_edges[1])) == 1 ||
-            abs((answer_edges[0] - answer_edges[1])) == poly.arr.size()-1)) {
-            answer.push_back(poly[answer_edges[0]]);
-            answer.push_back(poly[answer_edges[1]]);
-            answer.push_back(std::make_pair(INT_MAX, INT_MAX));
-        }
+    }
+    //check parallel   
+    if (answer_edges.size() == 2 && (abs((answer_edges[0] - answer_edges[1])) == 1 ||
+        abs((answer_edges[0] - answer_edges[1])) == poly.arr.size() - 1)) {
+        answer.push_back(poly[answer_edges[0]]);
+        answer.push_back(poly[answer_edges[1]]);
+        answer.push_back(std::make_pair(INT_MAX, INT_MAX));
+    }
     return answer;
 }
+
 int main() {
-    std::string line;  
-    std::ifstream in("input.txt"); 
+    std::string line;
+    std::ifstream in("input.txt");
     std::ofstream out("output.txt");
     if (in.is_open())
     {
         int n = -1;
         in >> n;
-        std::pair<std::pair<int,int>, int> min_x;
+        std::pair<std::pair<int, int>, int> min_x;
         std::pair<std::pair<int, int>, int> max_x;
         std::pair<std::pair<int, int>, int> min_y;
         std::pair<std::pair<int, int>, int> max_y;
@@ -262,11 +277,11 @@ int main() {
             if (i) {
                 min_x = min(min_x, { {x,y},i });
                 max_x = max(max_x, { {x,y},i });
-                min_y = (min_y.first.second > y) ? std::make_pair( std::make_pair(x, y), i ) : min_y;
+                min_y = (min_y.first.second > y) ? std::make_pair(std::make_pair(x, y), i) : min_y;
                 max_y = (max_y.first.second < y) ? std::make_pair(std::make_pair(x, y), i) : max_y;
             }
             else {
-                min_x =  { {x,y},i };
+                min_x = { {x,y},i };
                 max_x = { {x,y},i };
                 min_y = { {x,y},i };
                 max_y = { {x,y},i };
@@ -281,11 +296,11 @@ int main() {
         {
             int a, b, c;
             in >> a >> b >> c;
-            lines.emplace_back(Line(a,b,c));
+            lines.emplace_back(Line(a, b, c));
         }
         if (out.is_open()) {
             for (auto line : lines) {
-                auto res= solve(verts, line, min_x.second, max_x.second, min_y.second, max_y.second);             // this is answer
+                auto res = solve(verts, line, min_x.second, max_x.second, min_y.second, max_y.second);             // this is answer
                 res.erase(std::unique(res.begin(), res.end()), res.end());
                 if (res.size() > 2) {
                     // Infinity
@@ -313,6 +328,6 @@ int main() {
     else {
         std::cout << "Error with input file\n";
     }
-   
-	return 0;
+
+    return 0;
 }
