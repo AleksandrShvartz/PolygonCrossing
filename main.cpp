@@ -183,6 +183,12 @@ std::vector<std::pair<double, double>> solve(
     }
     //  if intersection point exists
     auto find_answer = [&](int left, int right) {
+        int n = poly.arr.size();
+        left = (left % n + n) % n;
+        right = (right % n + n) % n;
+        if (left > right) {
+            right += n;
+        }
         if (line.sign(poly[left]) * line.sign(poly[right]) == 1) {
 
             return;
@@ -228,21 +234,35 @@ std::vector<std::pair<double, double>> solve(
             // if(line.sign(poly[mid-1])* line.sign(poly[mid + 1]) != 1)
             find_answer(mid + 1, mid - 1 + poly.arr.size());
         }
+        /*else {
+            if (sign_l * sign_mid != 1) {
+                find_answer(l, mid);
+            }
+            if (sign_r * sign_mid != 1) {
+                find_answer(mid, r);
+            }
+        }
+        if (sign_l * sign_mid != 1) {
+            find_answer(l, mid);
+            find_answer(mid + 1, l - 1);
+        }
+        else if (sign_r * sign_mid != 1) {
+                find_answer(mid, r);
+                find_answer(r+1, mid-1);}*/
         if (sign_l * sign_mid != 1) {
             find_answer(l, mid);
         }
         if (sign_r * sign_mid != 1) {
             find_answer(mid, r);
         }
-
         if (answer.size() == 1 && sign_l * sign_r != 1) { // can be another point
-            int ind = (line.b == 0 ? min_y_ind : max - min);
+ /*           int ind = (line.b == 0 ? min_y_ind : max - min);*/
             if (is_first_half) {
                 //check bottom 
-                find_answer(ind, poly.arr.size() - 1);
+                find_answer(r, l);
             }
             else {
-                find_answer(0, ind);
+                find_answer(l, r);
             }
         }
     }
