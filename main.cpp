@@ -281,7 +281,7 @@ std::vector<std::pair<double, double>> solve(
 int main() {
     std::string line;
     std::ifstream in("input.txt");
-    std::ofstream out("out.txt");
+    std::ofstream out("output.txt");
     if (in.is_open())
     {
         int n = -1;
