@@ -157,7 +157,7 @@ std::vector<std::pair<double, double>> solve(
             is_first_half = true;
         }
         else {//left part
-            l = min_y_ind;
+            l =  min_y_ind - max_y_ind;
         }
     }
     else {
@@ -197,13 +197,15 @@ std::vector<std::pair<double, double>> solve(
         Edge edge(poly[v], poly[v + 1]);
         auto point = edge.findIntersection(line, answer);
         //check if point is vertex
-        std::pair<int, int> int_point = std::make_pair(point.first + 0.5 - (point.first < 0),
-            point.second + 0.5 - (point.second < 0));
-        if (int_point == poly[v]) {
-            answer_edges.push_back(v);
-        }
-        if (int_point == poly[v + 1]) {
-            answer_edges.push_back(v + 1);
+        if (floor(point.first) == point.first && floor(point.second) == point.second) {
+            std::pair<int, int> int_point = std::make_pair(point.first + 0.5 - (point.first < 0),
+                point.second + 0.5 - (point.second < 0));
+            if (int_point == poly[v]) {
+                answer_edges.push_back(v);
+            }
+            if (int_point == poly[v + 1]) {
+                answer_edges.push_back(v + 1);
+            }
         }
 
     };
@@ -262,7 +264,7 @@ std::vector<std::pair<double, double>> solve(
                 find_answer(r, l);
             }
             else {
-                find_answer(l, r);
+                find_answer(0, l);
             }
         }
     }
@@ -279,7 +281,7 @@ std::vector<std::pair<double, double>> solve(
 int main() {
     std::string line;
     std::ifstream in("input.txt");
-    std::ofstream out("output.txt");
+    std::ofstream out("out.txt");
     if (in.is_open())
     {
         int n = -1;
